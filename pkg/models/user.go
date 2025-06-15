@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"golang.org/x/crypto/bcrypt"
 	"strings"
+	"time"
 )
 
 var IncorrectCredentialsError = errors.New("Incorrect username or password")
@@ -25,6 +26,7 @@ type DataPoint struct {
 	Temperature float64 `json:"temperature"`
 	Humidity    float64 `json:"humidity"`
 	Consumption float64 `json:"consumption"`
+	MeasuredAt  time.Time
 }
 
 type UserService struct {
@@ -86,4 +88,38 @@ VALUES ($1, NOW(), $2, $3, $4) RETURNING id`
 	_, err := us.DB.Exec(query, userId, dataPoint.Temperature, dataPoint.Humidity, dataPoint.Consumption)
 
 	return err
+}
+
+func (us *UserService) ListDatapoints(userId int) ([]DataPoint, error) {
+
+	query := `
+		SELECT temperature, humidity, consumption, measured_at
+		FROM datapoint
+		WHERE user_id = $1
+		ORDER BY measured_at ASC
+	`
+
+	rows, err := us.DB.Query(query, userId)
+	if err != nil {
+		return nil, fmt.Errorf("query error: %w", err)
+	}
+	defer rows.Close()
+
+	//var datapoints []DataPoint
+	datapoints := []DataPoint{}
+
+	for rows.Next() {
+		var dp DataPoint
+		err := rows.Scan(&dp.Temperature, &dp.Humidity, &dp.Consumption, &dp.MeasuredAt)
+		if err != nil {
+			return nil, fmt.Errorf("scan error: %w", err)
+		}
+		datapoints = append(datapoints, dp)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("row iteration error: %w", err)
+	}
+
+	return datapoints, nil
 }

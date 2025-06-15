@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"lenslocked/pkg/models"
+	"log"
 	"net/http"
 )
 
@@ -145,4 +146,32 @@ func (u Users) Datapoint(w http.ResponseWriter, r *http.Request) {
 	// Respond with status
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]string{"status": "received"})
+}
+
+func (u Users) GetDatapoints(w http.ResponseWriter, r *http.Request) {
+	sessionCookie, err := r.Cookie(CookieSessionName)
+
+	if err != nil {
+		http.Error(w, "Internal Server Error", 500)
+		return
+	}
+
+	user, err := u.SessionService.User(sessionCookie.Value)
+	if err != nil {
+		http.Error(w, "Invalid token!", http.StatusForbidden)
+		return
+	}
+
+	datapoints, err := u.UserService.ListDatapoints(user.ID)
+	if err != nil {
+		http.Error(w, "Failed to fetch datapoints", http.StatusInternalServerError)
+		log.Printf("Fetch error: %v", err)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(datapoints); err != nil {
+		http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+		log.Printf("Encoding error: %v", err)
+	}
 }
