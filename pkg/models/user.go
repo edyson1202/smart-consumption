@@ -23,10 +23,10 @@ type NewUser struct {
 }
 
 type DataPoint struct {
-	Temperature float64 `json:"temperature"`
-	Humidity    float64 `json:"humidity"`
-	Consumption float64 `json:"consumption"`
-	MeasuredAt  time.Time
+	Temperature float64   `json:"temperature"`
+	Humidity    float64   `json:"humidity"`
+	Consumption float64   `json:"consumption"`
+	MeasuredAt  time.Time //`json:"measured_at"`
 }
 
 type UserService struct {

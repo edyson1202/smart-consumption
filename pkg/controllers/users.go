@@ -111,29 +111,29 @@ func (u Users) SignOut(w http.ResponseWriter, r *http.Request) {
 }
 
 func (u Users) Datapoint(w http.ResponseWriter, r *http.Request) {
-	sessionCookie, err := r.Cookie(CookieSessionName)
+	/*	sessionCookie, err := r.Cookie(CookieSessionName)
 
-	if err != nil {
-		http.Error(w, "Internal Server Error", 500)
-		return
-	}
+		if err != nil {
+			http.Error(w, "Internal Server Error", 500)
+			return
+		}
 
-	user, err := u.SessionService.User(sessionCookie.Value)
-	if err != nil {
-		http.Error(w, "Invalid token!", http.StatusForbidden)
-		return
-	}
+		user, err := u.SessionService.User(sessionCookie.Value)
+		if err != nil {
+			http.Error(w, "Invalid token!", http.StatusForbidden)
+			return
+		}*/
 
 	var dp models.DataPoint
 
 	// Decode JSON body into struct
-	err = json.NewDecoder(r.Body).Decode(&dp)
+	err := json.NewDecoder(r.Body).Decode(&dp)
 	if err != nil {
 		http.Error(w, "Invalid JSON", http.StatusBadRequest)
 		return
 	}
 
-	err = u.UserService.CreateDatapoint(user.ID, dp)
+	err = u.UserService.CreateDatapoint(1, dp)
 
 	if err != nil {
 		http.Error(w, "Internal Server Error", 500)
